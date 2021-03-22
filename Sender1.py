@@ -6,9 +6,9 @@ import struct
 
 # header length in byte
 header_length = 3
-# data size in byte
+# data length in byte
 data_length = 1024
-# packet size
+# data packet length
 packet_length = header_length + data_length
 # save arguments
 if len(sys.argv) == 4:
@@ -18,7 +18,7 @@ if len(sys.argv) == 4:
 else:    
     sys.exit('Invalid arguments')
 
-# create UDP socket
+# create socket
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # socket.connect((remote_host, port))
 # socket.sendto("hello".encode(), (remote_host, port))
@@ -57,12 +57,14 @@ with open(filename, 'rb') as f:
             data = f.read(data_length)
             # count the sequence number
             seq_num += 1
+        f.close()       
+        socket.close()     
     except Exception as ex:
         print(ex)
 
 print("Transfer finished %s, file length %d" %(filename, data_transferred))
 # close the socket
-socket.close()
+
 
 
 # struct method with format

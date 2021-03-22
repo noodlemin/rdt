@@ -4,7 +4,7 @@ import sys
 import socket
 import struct
 
-# size of packet
+# data packet length
 packet_length = 1027
 # save arguments
 if len(sys.argv) == 3:
@@ -13,7 +13,7 @@ if len(sys.argv) == 3:
 else:    
     sys.exit('Invalid arguments')
 
-# create UDP socket
+# create socket
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # bind the socket to the port
 socket.bind(('localhost', port))
