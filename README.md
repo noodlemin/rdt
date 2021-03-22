@@ -1,2 +1,5 @@
 # rdt
-rdt 1.0, Stop-and-Wait, Go-back-N, Selective Repeat + iPerf experiment
+1. rdt 1.0
+2. Stop-and-Wait
+3. Go-back-N
+4. Selective Repeat + iPerf experiment
