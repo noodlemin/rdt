@@ -25,11 +25,11 @@ if len(sys.argv) == 6:
 else:    
     sys.exit('Invalid arguments')
 
-# packet_num = math.ceil(os.path.getsize(file_name)/data_length)
+
 # timeout in ms
 rt_timeout = retry_timeout * 0.001
 # create socket
-socket3 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket4 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 recv_addr = (remote_host, port)
 # next sequence number
 nextseqnum = 0
@@ -41,8 +41,6 @@ lock = threading.Lock()
 packets = []
 # total trasfer time
 total_time = 0
-base = 0
-
 
 # create packets
 def create_packet(data, seq_num):
@@ -65,6 +63,8 @@ def create_packet(data, seq_num):
     return packet
 
 # oper the file and save packets
+# f = open(file_name, 'rb')
+# oper the file and save packets
 with open(file_name, 'rb') as f:
     seq_num = 0
     data = f.read(data_length) 
@@ -76,17 +76,15 @@ with open(file_name, 'rb') as f:
         f.close()
     except Exception as ex:
         print(ex)
-# number of packets
-packet_num = len(packets)
 # timer flag for timeout 
 start_timer = 0
 # start time for timeout
 s_time = 0
-# for throughput
 start = 0
-# in the case receiver done and sender still running
-done = False
+base =  0
+packet_num = math.ceil(os.path.getsize(file_name)/data_length)
 
+recved_ack = []
 # receiver 
 def recver(sock):
     global nextseqnum
@@ -94,18 +92,19 @@ def recver(sock):
     global start_timer
     global s_time
     global start
-    global done
+    global recved_ack
+
     # runs until
     while base < packet_num:
         # run
         time.sleep(0.0001)                 
         # receive the ack packet from Receiver
         packet, _ = sock.recvfrom(ack_length)
-        if not packet:
-            done = True
-            break
         # number of ack
         ack = int.from_bytes(packet[:2], byteorder='big')
+        # lock the thread when we need to change variables    
+        lock.acquire()
+        recved_ack.append(ack)
         # for throughput
         if ack == 0:
             start = time.time()
@@ -114,9 +113,7 @@ def recver(sock):
             end = time.time()
             total_time = end - start            
             file_size = os.path.getsize(file_name)/1000
-            print(round(file_size/total_time, 2))
-        # lock the thread when we need to change variables    
-        lock.acquire()
+            print(round(file_size/total_time, 2))    
         # move base
         base = ack + 1        
         # nothing to send yet
@@ -134,15 +131,16 @@ def sender(sock):
     global nextseqnum    
     global start_timer
     global s_time
-    
+    global packets
     # run until
     while base < packet_num:
+        # print(nextseqnum)
         # run 
         time.sleep(0.00001)
         # send packets until reaches to the window size
         if nextseqnum < base + window_size:
             # don't send if nextseqnum is over than the packet size            
-            if nextseqnum < len(packets):
+            if nextseqnum < len(packets):    
                 sock.sendto(packets[nextseqnum], recv_addr)
             # to change variables               
             lock.acquire()
@@ -164,16 +162,15 @@ def sender(sock):
             lock.release()
             # send         
             for i in range(window_size):
-                if base + i - 1 < packet_num:
+                if (base + i - 1 < packet_num) and (base+i-1 not in recved_ack):
                     temp = packets[base+i-1]
                     sock.sendto(temp, recv_addr)
-        if done:
-            break
+
     # close the socket
     sock.close()
         
 # make threads and start        
-sender_thread = threading.Thread(target=sender, args=(socket3,))
-recver_thread = threading.Thread(target=recver, args=(socket3,))
+sender_thread = threading.Thread(target=sender, args=(socket4,))
+recver_thread = threading.Thread(target=recver, args=(socket4,))
 sender_thread.start()
 recver_thread.start()

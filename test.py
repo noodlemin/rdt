@@ -5,6 +5,7 @@ import signal
 from functools import wraps
 import errno
 import os
+import threading
 
 packet_length = 1027
 
@@ -43,13 +44,64 @@ def create_packets(file_name, data_length):
         except Exception as ex:
             print(ex)         
 
-a = create_packets('test.jpg', packet_length)
+# a = create_packets('test.jpg', packet_length)
 
 # b = int.from_bytes(a[10][:2], byteorder='big')
+count = 0
+# need to use same lock for both function
+lock = threading.Lock()
+def test(name):
+    global count
+    lock.acquire()    
+    print('뭐인마' + name)    
+    try:
+        while count < 3:
+            print(count)
+            count +=1
+            time.sleep(1)
+        # count = 0
+    finally:
+        lock.release()
 
+def wut(name):
+    global count
+    lock.acquire()    
+    print('네' + name)    
+    try:
+        while count > 0 :
+            print(count)
+            count -=1
+            time.sleep(1)
+        # count = 0
+    finally:
+        lock.release()
 
-print(len(a))
-print(a[875][2])
+# if __name__ == '__main__':
+#     print('before thread?')
+#     my_thread = threading.Thread(target=test, args=('julia', ))
+#     you_thread = threading.Thread(target=wut, args=('me', ))
+#     print('before running')    
+    
+#     my_thread.start()
+#     you_thread.start()
+#     my_thread.join()
+#     # print('wait?')
+#     # threading.Lock().release() 
+    
+    
+#     you_thread.join()
+    # threading.Lock().acquire()
+    
+    
+# close file                                   
+print(os.path.getsize('test.jpg'))
+    
+    # print('done')
 
-l = [12,3,4]
-print(1 not in l)
+    # if ack 
+    #     pop packet
+    #     append packet
+
+    # len()
+
+    # recved_packet = 0
