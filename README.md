@@ -1,5 +1,3 @@
 # Reliable Data Transfer (RDT)
-1. rdt 1.0
-2. Stop-and-Wait
-3. Go-back-N
-4. Selective Repeat + iPerf experiment
+- I learned how to implement and evaluate different protocols for achieving end-to-end reliable data transfer over the unreliable User Datagram Protocol (UDP).
+- I implemented three sliding window protocols: Stop-and-Wait, Go-Back-N, and Selective Repeat.
